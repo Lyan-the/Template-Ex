@@ -1,0 +1,34 @@
+name: deploy-toy-website
+concurrency: toy-company
+ 
+
+on:
+    push:
+        branches:
+          - main
+          - 'deploy/**'
+
+permissions:
+    id-token: write
+    contents: read
+
+env:
+    AZURE_RESOURCE_GROUP_NAME: ToyWebsite
+    ENVIORNMENT: nonprod
+
+jobs:
+    deploy:
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v3
+      - uses: azure/login@v1
+        with:
+            creds: ${{ secrets.AZURE_GH_CREDENTIALS }}
+            
+      - uses: azure/arm-deploy@v1
+        with:
+            deploymentName: ${{ github.run_number }}
+            resourceGroupName: ${{ env.AZURE_RESOURCE_GROUP_NAME }}
+            template: ./deploy/main.bicep
+            parameters: environmentType=${{ env.ENVIORNMENT }}
+        
